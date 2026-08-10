@@ -1,4 +1,21 @@
 Difference between class and struct.
+ - A class is a reference type, while a struct is a value type.
+|--------------------------------|---------------------------------|----------------------------------|
+|                                | Class                           | Struct                           |
+| ------------------------------ | ------------------------------- | -------------------------------- |
+| Type                           | Reference type                  | Value type                       |
+| Represents                     | Usually an entity/object        | Usually a value                  |
+| Assignment                     | Copies reference                | Copies value                     |
+| Can have methods               | ✅                              | ✅                              |
+| Can have properties            | ✅                              | ✅                              |
+| Can implement interfaces       | ✅                              | ✅                              |
+| Inheritance from another class | ✅                              | ❌                              |
+| Can inherit another struct     | ❌                              | ❌                              |
+| Default value                  | `null`                          | Zero/default values              |
+| Typical use                    | `Customer`, `Order`, `Employee` | `Point`, `DateTime`, small value |
+|--------------------------------|---------------------------------|----------------------------------|
+
+
 Difference between interface and abstract class.
 Demonstrate inheritance.
 Demonstrate polymorphism.
