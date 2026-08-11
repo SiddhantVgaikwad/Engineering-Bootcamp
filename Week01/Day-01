@@ -1,23 +1,711 @@
-Difference between class and struct.
- - A class is a reference type, while a struct is a value type.
-|--------------------------------|---------------------------------|----------------------------------|
-|                                | Class                           | Struct                           |
-| ------------------------------ | ------------------------------- | -------------------------------- |
-| Type                           | Reference type                  | Value type                       |
-| Represents                     | Usually an entity/object        | Usually a value                  |
-| Assignment                     | Copies reference                | Copies value                     |
-| Can have methods               | ✅                              | ✅                              |
-| Can have properties            | ✅                              | ✅                              |
-| Can implement interfaces       | ✅                              | ✅                              |
-| Inheritance from another class | ✅                              | ❌                              |
-| Can inherit another struct     | ❌                              | ❌                              |
-| Default value                  | `null`                          | Zero/default values              |
-| Typical use                    | `Customer`, `Order`, `Employee` | `Point`, `DateTime`, small value |
-|--------------------------------|---------------------------------|----------------------------------|
+# 🧱 OOP Concepts in C#
 
+> Quick revision notes for **Object-Oriented Programming in C#**
 
-Demonstrate encapsulation : .
-Demonstrate abstraction : .
-Difference between interface and abstract class.
-Demonstrate inheritance.
-Demonstrate polymorphism.
+---
+
+# 1. Difference Between `class` and `struct`
+
+A **class** is a **reference type**, while a **struct** is a **value type**.
+
+| Feature                                      | Class                           | Struct                            |
+| -------------------------------------------- | ------------------------------- | --------------------------------- |
+| **Type**                                     | Reference type                  | Value type                        |
+| **Represents**                               | Usually an entity/object        | Usually a small value             |
+| **Assignment**                               | Copies the reference            | Copies the value                  |
+| **Can have methods**                         | ✅                               | ✅                                 |
+| **Can have properties**                      | ✅                               | ✅                                 |
+| **Can implement interfaces**                 | ✅                               | ✅                                 |
+| **Inheritance from another class**           | ✅                               | ❌                                 |
+| **Can inherit another struct**               | ❌                               | ❌                                 |
+| **Can be inherited by another class/struct** | ✅                               | ❌                                 |
+| **Default value**                            | `null`                          | Default/zero value                |
+| **Typical use**                              | `Customer`, `Order`, `Employee` | `Point`, `DateTime`, small values |
+
+### Example
+
+```csharp
+class Person
+{
+    public string Name { get; set; }
+}
+
+struct Point
+{
+    public int X;
+    public int Y;
+}
+```
+
+### Class assignment
+
+```csharp
+Person p1 = new Person();
+p1.Name = "John";
+
+Person p2 = p1;
+
+p2.Name = "Alex";
+
+Console.WriteLine(p1.Name); // Alex
+```
+
+Both `p1` and `p2` refer to the **same object**.
+
+### Struct assignment
+
+```csharp
+Point p1 = new Point();
+p1.X = 10;
+
+Point p2 = p1;
+
+p2.X = 20;
+
+Console.WriteLine(p1.X); // 10
+Console.WriteLine(p2.X); // 20
+```
+
+`p1` and `p2` contain **separate copies of the value**.
+
+---
+
+## When to Use a Struct?
+
+Use a struct when:
+
+* The data is relatively **small**
+* You want **value-type behavior**
+* The object represents a **value rather than an entity**
+* You don't need class inheritance
+* The value is logically independent when copied
+
+### Examples
+
+```text
+Point
+DateTime
+TimeSpan
+Guid
+```
+
+> 💡 **Easy way to remember:**
+> **Class → Object/Entity**
+> **Struct → Small Value**
+
+---
+
+# 2. Encapsulation
+
+### Definition
+
+> **Encapsulation** means protecting the internal state of an object and providing controlled access to it.
+
+In simple words:
+
+```text
+Hide the data
+      ↓
+Control how it is accessed
+      ↓
+Protect the object
+```
+
+### Example
+
+```csharp
+public class BankAccount
+{
+    private decimal balance; // Hidden from outside
+
+    public void Deposit(decimal amount)
+    {
+        if (amount > 0)
+            balance += amount;
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount > 0 && amount <= balance)
+            balance -= amount;
+    }
+
+    public decimal GetBalance()
+    {
+        return balance;
+    }
+}
+```
+
+### Usage
+
+```csharp
+BankAccount account = new BankAccount();
+
+account.Deposit(1000);
+account.Withdraw(300);
+
+Console.WriteLine(account.GetBalance());
+```
+
+### Key Points
+
+* `balance` is `private` → cannot be accessed directly
+* Data can only be changed through controlled methods
+* Validation can be applied
+* Prevents invalid state
+
+For example:
+
+```csharp
+account.balance = -500; // ❌ Not allowed
+```
+
+Instead:
+
+```csharp
+account.Deposit(500); // ✅ Controlled access
+```
+
+### Real-life Example
+
+🏦 **Bank Account**
+
+You can deposit and withdraw money, but you cannot directly modify the bank's internal balance.
+
+---
+
+# 3. Abstraction
+
+### Definition
+
+> **Abstraction** means hiding unnecessary implementation details and exposing only the essential functionality.
+
+In simple words:
+
+```text
+What to do
+   ↓
+Expose
+   ↓
+How it is done
+   ↓
+Hide
+```
+
+### Example
+
+```csharp
+public abstract class Payment
+{
+    public abstract void ProcessPayment(decimal amount);
+
+    public void ShowReceipt()
+    {
+        Console.WriteLine("Payment Successful");
+    }
+}
+```
+
+```csharp
+public class CreditCardPayment : Payment
+{
+    public override void ProcessPayment(decimal amount)
+    {
+        Console.WriteLine(
+            $"Processing Credit Card payment of {amount}"
+        );
+    }
+}
+```
+
+### Usage
+
+```csharp
+Payment payment = new CreditCardPayment();
+
+payment.ProcessPayment(1000);
+payment.ShowReceipt();
+```
+
+### Output
+
+```text
+Processing Credit Card payment of 1000
+Payment Successful
+```
+
+### Key Points
+
+* Abstract class cannot normally be instantiated directly
+* Abstract methods don't contain implementation in the base class
+* Derived classes provide the implementation
+* Hides implementation details
+* Focuses on **what** an object does rather than **how**
+
+### Real-life Example
+
+🏧 **ATM**
+
+You know:
+
+```text
+Insert Card
+Enter PIN
+Withdraw Money
+```
+
+But you don't need to know the internal banking system implementation.
+
+> 💡 **Encapsulation vs Abstraction**
+>
+> **Encapsulation → How to protect data?**
+> **Abstraction → How to hide implementation complexity?**
+
+---
+
+# 4. Inheritance
+
+### Definition
+
+> **Inheritance** allows one class to acquire members and behavior from another class.
+
+It represents an:
+
+```text
+IS-A relationship
+```
+
+### Example
+
+```csharp
+public class Animal
+{
+    public void Eat()
+    {
+        Console.WriteLine("Animal is eating");
+    }
+}
+```
+
+```csharp
+public class Dog : Animal
+{
+    public void Bark()
+    {
+        Console.WriteLine("Dog is barking");
+    }
+}
+```
+
+### Usage
+
+```csharp
+Dog dog = new Dog();
+
+dog.Eat();   // Inherited method
+dog.Bark();  // Dog's own method
+```
+
+### Output
+
+```text
+Animal is eating
+Dog is barking
+```
+
+### Relationship
+
+```text
+        Animal
+           ↑
+           |
+          Dog
+```
+
+A `Dog` **IS-A** `Animal`.
+
+### Key Points
+
+* Promotes code reuse
+* Derived class inherits accessible members
+* Supports method overriding
+* Represents an **IS-A relationship**
+
+### C# inheritance syntax
+
+```csharp
+class Child : Parent
+{
+}
+```
+
+> ⚠️ C# does not support multiple inheritance between classes.
+>
+> ```csharp
+> class Dog : Animal, Mammal // ❌
+> ```
+>
+> However, a class can implement multiple interfaces.
+
+---
+
+# 5. Polymorphism
+
+### Definition
+
+> **Polymorphism** means "many forms".
+
+The same method or interface can behave differently depending on the situation.
+
+There are two major types:
+
+| Type                      | Also Known As      | Example                           |
+| ------------------------- | ------------------ | --------------------------------- |
+| Compile-time Polymorphism | Method Overloading | Same method, different parameters |
+| Runtime Polymorphism      | Method Overriding  | `virtual` + `override`            |
+
+---
+
+## 5.1 Compile-time Polymorphism
+
+### Method Overloading
+
+Same method name but **different parameters**.
+
+```csharp
+public class Calculator
+{
+    public int Add(int a, int b)
+    {
+        return a + b;
+    }
+
+    public int Add(int a, int b, int c)
+    {
+        return a + b + c;
+    }
+
+    public double Add(double a, double b)
+    {
+        return a + b;
+    }
+}
+```
+
+### Usage
+
+```csharp
+Calculator calculator = new Calculator();
+
+calculator.Add(10, 20);
+
+calculator.Add(10, 20, 30);
+
+calculator.Add(10.5, 20.5);
+```
+
+The compiler determines which method to call based on the arguments.
+
+```text
+Add(10, 20)
+     ↓
+Add(int, int)
+
+Add(10, 20, 30)
+     ↓
+Add(int, int, int)
+```
+
+---
+
+# 5.2 Runtime Polymorphism
+
+### Method Overriding
+
+A derived class provides its own implementation of a method defined in the base class.
+
+```csharp
+public class Animal
+{
+    public virtual void MakeSound()
+    {
+        Console.WriteLine("Animal makes sound");
+    }
+}
+```
+
+```csharp
+public class Dog : Animal
+{
+    public override void MakeSound()
+    {
+        Console.WriteLine("Dog barks");
+    }
+}
+```
+
+```csharp
+public class Cat : Animal
+{
+    public override void MakeSound()
+    {
+        Console.WriteLine("Cat meows");
+    }
+}
+```
+
+### Usage
+
+```csharp
+Animal animal1 = new Dog();
+Animal animal2 = new Cat();
+
+animal1.MakeSound();
+animal2.MakeSound();
+```
+
+### Output
+
+```text
+Dog barks
+Cat meows
+```
+
+Although the variable type is `Animal`, the actual object's implementation is used at runtime.
+
+```text
+Animal reference
+      |
+      +----> Dog → Dog.MakeSound()
+      |
+      +----> Cat → Cat.MakeSound()
+```
+
+> 💡 **Easy way to remember**
+>
+> **Overloading → Same name, different parameters**
+>
+> **Overriding → Same method, different implementation**
+
+---
+
+# 6. Interface vs Abstract Class
+
+Both **interfaces** and **abstract classes** are used to define contracts/abstractions, but they serve different purposes.
+
+| Feature                   | Abstract Class                                    | Interface                                                                                                                 |
+| ------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Purpose**               | Base class with shared abstraction/implementation | Defines a contract/capability                                                                                             |
+| **Method implementation** | Can have implemented methods                      | Can have implementations using modern C# features                                                                         |
+| **Abstract methods**      | ✅                                                 | ✅                                                                                                                         |
+| **Fields**                | ✅                                                 | ❌ Instance fields                                                                                                         |
+| **Constants**             | ✅                                                 | ✅                                                                                                                         |
+| **Constructor**           | ✅                                                 | ❌                                                                                                                         |
+| **Instance state**        | ✅                                                 | ❌                                                                                                                         |
+| **Access modifiers**      | `private`, `protected`, `public`, etc.            | Interface members are generally public contract members; explicit implementations can be private to the implementing type |
+| **Multiple inheritance**  | ❌ A class can inherit only one class              | ✅ A class can implement multiple interfaces                                                                               |
+| **Use when**              | Classes are closely related                       | Different classes share a capability/contract                                                                             |
+
+---
+
+## Abstract Class Example
+
+```csharp
+public abstract class Vehicle
+{
+    public string Brand { get; set; }
+
+    public void Start()
+    {
+        Console.WriteLine("Vehicle started");
+    }
+
+    public abstract void Move();
+}
+```
+
+```csharp
+public class Car : Vehicle
+{
+    public override void Move()
+    {
+        Console.WriteLine("Car is moving");
+    }
+}
+```
+
+Here:
+
+```text
+Vehicle
+   ↑
+   |
+  Car
+```
+
+`Car` **IS-A** `Vehicle`.
+
+Use an abstract class when the derived classes are **closely related** and should share common state or implementation.
+
+---
+
+# Interface Example
+
+```csharp
+public interface IPayable
+{
+    void Pay(decimal amount);
+}
+```
+
+```csharp
+public class CreditCard : IPayable
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Paid {amount} using Credit Card");
+    }
+}
+```
+
+```csharp
+public class UPI : IPayable
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Paid {amount} using UPI");
+    }
+}
+```
+
+Both classes support the same capability:
+
+```text
+          IPayable
+          /     \
+         /       \
+CreditCard       UPI
+```
+
+They don't need to belong to the same class hierarchy.
+
+### Multiple Interfaces
+
+A class can implement multiple interfaces:
+
+```csharp
+public interface IPrintable
+{
+    void Print();
+}
+
+public interface IScannable
+{
+    void Scan();
+}
+
+public class Printer : IPrintable, IScannable
+{
+    public void Print()
+    {
+        Console.WriteLine("Printing...");
+    }
+
+    public void Scan()
+    {
+        Console.WriteLine("Scanning...");
+    }
+}
+```
+
+---
+
+# 7. Four Pillars of OOP
+
+The four major pillars of Object-Oriented Programming are:
+
+```text
+             OOP
+              |
+      +-------+-------+
+      |       |       |
+ Encapsulation      Abstraction
+      |               |
+      +-------+-------+
+              |
+       +------+------+
+       |             |
+   Inheritance   Polymorphism
+```
+
+## Quick Revision
+
+| Pillar               | Main Idea                     | Easy Question                |
+| -------------------- | ----------------------------- | ---------------------------- |
+| 🔒 **Encapsulation** | Hide/protect data             | "How do I protect the data?" |
+| 🎭 **Abstraction**   | Hide complexity               | "What should I expose?"      |
+| 🧬 **Inheritance**   | Reuse/extend behavior         | "IS-A relationship?"         |
+| 🔄 **Polymorphism**  | One interface, many behaviors | "Can it behave differently?" |
+
+---
+
+# 8. Interview Quick Notes
+
+### Class vs Struct
+
+```text
+Class  → Reference Type
+Struct → Value Type
+```
+
+### Encapsulation
+
+```text
+Private data + Controlled access
+```
+
+### Abstraction
+
+```text
+Hide implementation + Expose essential functionality
+```
+
+### Inheritance
+
+```text
+Parent → Child
+IS-A relationship
+```
+
+### Polymorphism
+
+```text
+Overloading → Compile Time
+Overriding  → Runtime
+```
+
+### Abstract Class
+
+```text
+Shared base + Common implementation/state
+```
+
+### Interface
+
+```text
+Contract / Capability
+```
+
+---
+
+# 🧠 One-Line Memory Trick
+
+```text
+Encapsulation → Protect
+Abstraction   → Hide
+Inheritance   → Reuse
+Polymorphism  → Different Forms
+```
+
+> **OOP = Protect + Hide + Reuse + Different Behavior**
