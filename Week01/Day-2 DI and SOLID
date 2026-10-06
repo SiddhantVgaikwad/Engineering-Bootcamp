@@ -1,0 +1,96 @@
+## Lesson 11 : SOLID
+
+<aside>
+💡
+
+- **S — SRP** → One responsibility / one reason to change
+- **O — OCP** → Open for extension, closed for modification
+- **L — LSP** → Child should safely replace parent
+- **I — ISP** → Don't force classes to depend on things they don't need
+- **D — DIP** → Depend on abstractions, not concrete implementations
+</aside>
+
+1. S — Single Responsibility Principle (SRP) : SRP is about **one clear responsibility / one reason to change**
+2. O — Open/Closed Principle : Software entities should be open for extension but closed for modification.
+
+```csharp
+🧠 Mental model
+Open for extension:
+We should be able to add new behavior.
+
+Closed for modification:
+We shouldn't have to keep changing stable existing code to add that behavior.
+
+class RegularDiscount : IDiscountStrategy
+{
+public decimal Calculate(decimal amount)
+{
+return amount * 0.05m;
+}}
+class PremiumDiscount : IDiscountStrategy
+{
+public decimal Calculate(decimal amount)
+{
+return amount * 0.10m;
+}}
+class VIPDiscount : IDiscountStrategy
+{
+public decimal Calculate(decimal amount)
+{
+return amount * 0.20m;
+}}          
+          IDiscountStrategy
+                    │
+       ┌────────────┼────────────┐ ----|or many more 
+       ↓            ↓            ↓
+    Regular      Premium        VIP
+```
+
+1. **L — Liskov Substitution Principle (LSP) : Objects of a child class should be replaceable for objects of the parent class without breaking the correctness of the program.**
+
+```
+Bird
+ └── Fly()
+      ├── Eagle
+      └── Penguin ❌
+```
+
+```
+Bird
+ ├── Eagle
+ └── Penguin
+
+IFlyable
+ └── Eagle
+```
+
+1. I — Interface Segregation Principle(ISP) : A class should not be forced to implement methods it doesn't need.
+2. **D** — **Dependency Inversion Principle (DIP) :** 
+
+<aside>
+💡
+
+### DIP : →
+
+A **design principle**: Depend on abstractions, not concrete implementations.
+
+**DI** : →  A **technique/pattern** used to provide those dependencies from outside.
+
+</aside>
+
+# 2. .NET **************************************
+
+## Lesson 1: Dependency Injection
+
+- Dependency Injection is a design pattern where a class receives its dependencies from outside instead of creating them itself. This helps achieve loose coupling.
+
+<aside>
+💡
+
+Transient :  Need a fresh instance each time?
+
+Scoped : Need one instance for this request/scope?
+
+Singleton : Can safely share ONE instance across the entire application?
+
+</aside>
