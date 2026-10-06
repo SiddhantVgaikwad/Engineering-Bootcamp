@@ -1,61 +1,263 @@
-## Lesson 11 : SOLID
+# Lesson 11: SOLID Principles
 
-<aside>
-💡
+SOLID is a set of five object-oriented design principles that help us write code that is:
 
-- **S — SRP** → One responsibility / one reason to change
-- **O — OCP** → Open for extension, closed for modification
-- **L — LSP** → Child should safely replace parent
-- **I — ISP** → Don't force classes to depend on things they don't need
-- **D — DIP** → Depend on abstractions, not concrete implementations
-</aside>
+* Easy to understand
+* Easy to maintain
+* Easy to test
+* Flexible and extensible
+* Loosely coupled
 
-1. S — Single Responsibility Principle (SRP) : SRP is about **one clear responsibility / one reason to change**
-2. O — Open/Closed Principle : Software entities should be open for extension but closed for modification.
+## SOLID at a Glance
+
+| Principle   | Meaning                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| **S — SRP** | Single Responsibility Principle — One responsibility / one reason to change               |
+| **O — OCP** | Open/Closed Principle — Open for extension, closed for modification                       |
+| **L — LSP** | Liskov Substitution Principle — Child should safely replace parent                        |
+| **I — ISP** | Interface Segregation Principle — Don't force classes to depend on things they don't need |
+| **D — DIP** | Dependency Inversion Principle — Depend on abstractions, not concrete implementations     |
+
+---
+
+# 1. S — Single Responsibility Principle (SRP)
+
+> **A class should have one clear responsibility and one reason to change.**
+
+The goal of SRP is to avoid putting unrelated responsibilities into a single class.
+
+### ❌ Bad Example
 
 ```csharp
-🧠 Mental model
-Open for extension:
-We should be able to add new behavior.
+public class Employee
+{
+    public void CalculateSalary()
+    {
+        // Salary calculation
+    }
 
-Closed for modification:
-We shouldn't have to keep changing stable existing code to add that behavior.
+    public void SaveToDatabase()
+    {
+        // Database logic
+    }
 
-class RegularDiscount : IDiscountStrategy
-{
-public decimal Calculate(decimal amount)
-{
-return amount * 0.05m;
-}}
-class PremiumDiscount : IDiscountStrategy
-{
-public decimal Calculate(decimal amount)
-{
-return amount * 0.10m;
-}}
-class VIPDiscount : IDiscountStrategy
-{
-public decimal Calculate(decimal amount)
-{
-return amount * 0.20m;
-}}          
-          IDiscountStrategy
-                    │
-       ┌────────────┼────────────┐ ----|or many more 
-       ↓            ↓            ↓
-    Regular      Premium        VIP
+    public void SendEmail()
+    {
+        // Email logic
+    }
+}
 ```
 
-1. **L — Liskov Substitution Principle (LSP) : Objects of a child class should be replaceable for objects of the parent class without breaking the correctness of the program.**
+Here, `Employee` has multiple responsibilities:
 
+* Salary calculation
+* Database persistence
+* Sending emails
+
+This means the class has multiple reasons to change.
+
+### ✅ Better Example
+
+```csharp
+public class SalaryCalculator
+{
+    public decimal CalculateSalary()
+    {
+        // Salary calculation
+        return 50000;
+    }
+}
+
+public class EmployeeRepository
+{
+    public void Save()
+    {
+        // Database logic
+    }
+}
+
+public class EmailService
+{
+    public void SendEmail()
+    {
+        // Email logic
+    }
+}
 ```
+
+Now each class has one clear responsibility.
+
+### 🧠 Mental Model
+
+```text
+One Class
+    ↓
+One Responsibility
+    ↓
+One Reason to Change
+```
+
+---
+
+# 2. O — Open/Closed Principle (OCP)
+
+> **Software entities should be open for extension but closed for modification.**
+
+This means:
+
+* **Open for extension:** We should be able to add new behavior.
+* **Closed for modification:** We should not have to keep changing stable existing code whenever we add new behavior.
+
+## Example: Discount System
+
+Suppose we have different types of discounts.
+
+### ❌ Without OCP
+
+```csharp
+public decimal CalculateDiscount(string customerType, decimal amount)
+{
+    if (customerType == "Regular")
+    {
+        return amount * 0.05m;
+    }
+    else if (customerType == "Premium")
+    {
+        return amount * 0.10m;
+    }
+    else if (customerType == "VIP")
+    {
+        return amount * 0.20m;
+    }
+
+    return 0;
+}
+```
+
+Every time we add a new discount type, we have to modify this existing method.
+
+For example, adding `EmployeeDiscount` means changing the method again.
+
+### ✅ Using OCP
+
+Create an abstraction:
+
+```csharp
+public interface IDiscountStrategy
+{
+    decimal Calculate(decimal amount);
+}
+```
+
+Then create separate implementations:
+
+```csharp
+public class RegularDiscount : IDiscountStrategy
+{
+    public decimal Calculate(decimal amount)
+    {
+        return amount * 0.05m;
+    }
+}
+
+public class PremiumDiscount : IDiscountStrategy
+{
+    public decimal Calculate(decimal amount)
+    {
+        return amount * 0.10m;
+    }
+}
+
+public class VIPDiscount : IDiscountStrategy
+{
+    public decimal Calculate(decimal amount)
+    {
+        return amount * 0.20m;
+    }
+}
+```
+
+Now if we need another discount:
+
+```csharp
+public class EmployeeDiscount : IDiscountStrategy
+{
+    public decimal Calculate(decimal amount)
+    {
+        return amount * 0.30m;
+    }
+}
+```
+
+We added new behavior without modifying the existing discount classes.
+
+### 🧠 Mental Model
+
+```text
+              IDiscountStrategy
+                      │
+          ┌───────────┼───────────┐
+          ↓           ↓           ↓
+      Regular      Premium       VIP
+          │           │           │
+        5%          10%           20%
+
+                ↓ New extension
+
+             Employee
+               30%
+```
+
+The existing code remains unchanged while new behavior is added through extension.
+
+---
+
+# 3. L — Liskov Substitution Principle (LSP)
+
+> **Objects of a child class should be replaceable with objects of the parent class without breaking the correctness of the program.**
+
+In simple words:
+
+> If `B` is a subtype of `A`, then we should be able to use `B` wherever `A` is expected without unexpected behavior.
+
+## ❌ Bad Example
+
+Consider this design:
+
+```text
 Bird
  └── Fly()
       ├── Eagle
       └── Penguin ❌
 ```
 
+If `Bird` contains a `Fly()` method, then `Penguin` is forced to implement flying even though penguins cannot fly.
+
+```csharp
+public class Bird
+{
+    public virtual void Fly()
+    {
+        // Fly
+    }
+}
+
+public class Penguin : Bird
+{
+    public override void Fly()
+    {
+        throw new NotImplementedException();
+    }
+}
 ```
+
+This violates LSP because code expecting a `Bird` may call `Fly()` and break when it receives a `Penguin`.
+
+## ✅ Better Design
+
+Separate the responsibilities:
+
+```text
 Bird
  ├── Eagle
  └── Penguin
@@ -64,33 +266,458 @@ IFlyable
  └── Eagle
 ```
 
-1. I — Interface Segregation Principle(ISP) : A class should not be forced to implement methods it doesn't need.
-2. **D** — **Dependency Inversion Principle (DIP) :** 
+```csharp
+public class Bird
+{
+}
 
-<aside>
-💡
+public interface IFlyable
+{
+    void Fly();
+}
 
-### DIP : →
+public class Eagle : Bird, IFlyable
+{
+    public void Fly()
+    {
+        Console.WriteLine("Eagle is flying");
+    }
+}
 
-A **design principle**: Depend on abstractions, not concrete implementations.
+public class Penguin : Bird
+{
+}
+```
 
-**DI** : →  A **technique/pattern** used to provide those dependencies from outside.
+Now:
 
-</aside>
+* `Eagle` is a `Bird`
+* `Penguin` is a `Bird`
+* Only birds that can actually fly implement `IFlyable`
 
-# 2. .NET **************************************
+### 🧠 Mental Model
 
-## Lesson 1: Dependency Injection
+```text
+Don't force a child class to support
+behavior that doesn't make sense for it.
+```
 
-- Dependency Injection is a design pattern where a class receives its dependencies from outside instead of creating them itself. This helps achieve loose coupling.
+---
 
-<aside>
-💡
+# 4. I — Interface Segregation Principle (ISP)
 
-Transient :  Need a fresh instance each time?
+> **A class should not be forced to implement methods that it does not need.**
 
-Scoped : Need one instance for this request/scope?
+Instead of creating one large interface, prefer smaller, focused interfaces.
 
-Singleton : Can safely share ONE instance across the entire application?
+## ❌ Bad Example
 
-</aside>
+```csharp
+public interface IWorker
+{
+    void Work();
+    void Eat();
+    void Sleep();
+}
+```
+
+Now imagine a robot:
+
+```csharp
+public class Robot : IWorker
+{
+    public void Work()
+    {
+        Console.WriteLine("Robot is working");
+    }
+
+    public void Eat()
+    {
+        // Robot doesn't eat
+    }
+
+    public void Sleep()
+    {
+        // Robot doesn't sleep
+    }
+}
+```
+
+The `Robot` class is forced to implement methods it doesn't need.
+
+## ✅ Better Example
+
+Split the interface:
+
+```csharp
+public interface IWorkable
+{
+    void Work();
+}
+
+public interface IEatable
+{
+    void Eat();
+}
+
+public interface ISleepable
+{
+    void Sleep();
+}
+```
+
+Human:
+
+```csharp
+public class Human : IWorkable, IEatable, ISleepable
+{
+    public void Work()
+    {
+        Console.WriteLine("Human is working");
+    }
+
+    public void Eat()
+    {
+        Console.WriteLine("Human is eating");
+    }
+
+    public void Sleep()
+    {
+        Console.WriteLine("Human is sleeping");
+    }
+}
+```
+
+Robot:
+
+```csharp
+public class Robot : IWorkable
+{
+    public void Work()
+    {
+        Console.WriteLine("Robot is working");
+    }
+}
+```
+
+### 🧠 Mental Model
+
+```text
+❌ One large interface
+        ↓
+    Many methods
+        ↓
+Classes implement things they don't need
+
+
+✅ Small interfaces
+        ↓
+Classes implement only what they need
+```
+
+---
+
+# 5. D — Dependency Inversion Principle (DIP)
+
+> **Depend on abstractions, not concrete implementations.**
+
+High-level modules should not directly depend on low-level modules.
+
+Instead, both should depend on abstractions.
+
+## ❌ Without DIP
+
+```csharp
+public class EmailService
+{
+    public void Send()
+    {
+        Console.WriteLine("Sending email...");
+    }
+}
+
+public class OrderService
+{
+    private EmailService _emailService = new EmailService();
+
+    public void PlaceOrder()
+    {
+        // Place order
+
+        _emailService.Send();
+    }
+}
+```
+
+`OrderService` is directly dependent on the concrete `EmailService`.
+
+If later we want to use SMS instead of email, we need to modify `OrderService`.
+
+## ✅ Using DIP
+
+Create an abstraction:
+
+```csharp
+public interface INotificationService
+{
+    void Send();
+}
+```
+
+Implement it:
+
+```csharp
+public class EmailService : INotificationService
+{
+    public void Send()
+    {
+        Console.WriteLine("Sending email...");
+    }
+}
+```
+
+Another implementation:
+
+```csharp
+public class SmsService : INotificationService
+{
+    public void Send()
+    {
+        Console.WriteLine("Sending SMS...");
+    }
+}
+```
+
+Now `OrderService` depends on the abstraction:
+
+```csharp
+public class OrderService
+{
+    private readonly INotificationService _notificationService;
+
+    public OrderService(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
+    public void PlaceOrder()
+    {
+        // Place order
+
+        _notificationService.Send();
+    }
+}
+```
+
+### 🧠 Mental Model
+
+```text
+❌ DIP Violation
+
+OrderService
+      │
+      ↓
+EmailService
+
+
+✅ DIP
+
+OrderService
+      │
+      ↓
+INotificationService
+      ↑
+      │
+ ┌────┴─────┐
+ ↓          ↓
+Email      SMS
+```
+
+---
+
+# DIP vs DI
+
+These two concepts are related, but they are **not the same thing**.
+
+## DIP — Dependency Inversion Principle
+
+**DIP is a design principle.**
+
+It tells us:
+
+> Depend on abstractions, not concrete implementations.
+
+Example:
+
+```csharp
+public class OrderService
+{
+    private readonly INotificationService _notificationService;
+}
+```
+
+`OrderService` depends on `INotificationService`, not `EmailService`.
+
+---
+
+## DI — Dependency Injection
+
+**DI is a technique/pattern used to provide dependencies from outside a class.**
+
+Instead of creating the dependency inside the class:
+
+```csharp
+public class OrderService
+{
+    private EmailService _emailService = new EmailService();
+}
+```
+
+We provide it from outside:
+
+```csharp
+public class OrderService
+{
+    private readonly INotificationService _notificationService;
+
+    public OrderService(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+}
+```
+
+### 🧠 Easy Way to Remember
+
+```text
+DIP = What we should depend on
+
+DI  = How we provide that dependency
+```
+
+---
+
+# 6. .NET
+
+# Lesson 1: Dependency Injection
+
+> **Dependency Injection is a design pattern where a class receives its dependencies from outside instead of creating them itself.**
+
+DI helps us achieve:
+
+* Loose coupling
+* Better testability
+* Easier maintenance
+* Easier replacement of implementations
+* Better separation of responsibilities
+
+## ❌ Without Dependency Injection
+
+```csharp
+public class OrderService
+{
+    private readonly EmailService _emailService;
+
+    public OrderService()
+    {
+        _emailService = new EmailService();
+    }
+}
+```
+
+`OrderService` creates its own dependency.
+
+This creates tight coupling.
+
+## ✅ With Dependency Injection
+
+```csharp
+public class OrderService
+{
+    private readonly INotificationService _notificationService;
+
+    public OrderService(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+}
+```
+
+The dependency is supplied from outside.
+
+---
+
+# Dependency Injection in ASP.NET Core
+
+In ASP.NET Core, dependencies are usually registered in the DI container.
+
+```csharp
+builder.Services.AddScoped<IOrderService, OrderService>();
+```
+
+Then ASP.NET Core automatically injects the dependency:
+
+```csharp
+public class OrderController : ControllerBase
+{
+    private readonly IOrderService _orderService;
+
+    public OrderController(IOrderService orderService)
+    {
+        _orderService = orderService;
+    }
+}
+```
+
+The framework creates the required `IOrderService` implementation and provides it to the controller.
+
+---
+
+# DI Service Lifetimes
+
+.NET provides three common service lifetimes:
+
+| Lifetime      | Meaning                                                      |
+| ------------- | ------------------------------------------------------------ |
+| **Transient** | A new instance is created each time the service is requested |
+| **Scoped**    | One instance is created per scope/request                    |
+| **Singleton** | One instance is shared for the entire application lifetime   |
+
+---
+
+## 1. Transient
+
+```csharp
+builder.Services.AddTransient<IEmailService, EmailService>();
+```
+
+A new instance is created every time the service is requested.
+
+### 🧠 Use when:
+
+> **Need a fresh instance each time? → Transient**
+
+Good for lightweight, stateless services.
+
+---
+
+## 2. Scoped
+
+```csharp
+builder.Services.AddScoped<IOrderService, OrderService>();
+```
+
+One instance is created for each scope.
+
+In a typical ASP.NET Core web application:
+
+```text
+HTTP Request
+     │
+     ├── OrderService → Instance A
+     ├── OrderService → Instance A
+     └── OrderService → Instance A
+
+Next HTTP Request
+     │
+```
